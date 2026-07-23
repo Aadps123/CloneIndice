@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/x-icon" href="https://utp.ac.pa/sites/default/files/documentos/2024/imagen/6_logo_utp_-_rgb_oficial.png">
+<title>Matrícula UTP — Historial de Notas</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+  /* Solo la fuente Glyphicons de Bootstrap (sin el reset que rompia el diseno) */
+  @font-face{
+    font-family:'Glyphicons Halflings';
+    src:url('https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/fonts/glyphicons-halflings-regular.woff2') format('woff2'),
+        url('https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/fonts/glyphicons-halflings-regular.woff') format('woff');
+    font-weight:normal;font-style:normal;
+  }
+  .glyphicon{
+    position:relative;top:1px;display:inline-block;
+    font-family:'Glyphicons Halflings';font-style:normal;font-weight:normal;
+    line-height:1;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  }
+  .glyphicon-search:before{content:"\e003";}
+  .glyphicon-off:before{content:"\e017";}
+  .glyphicon-time:before{content:"\e023";}
+  .glyphicon-list:before{content:"\e056";}
+  .glyphicon-edit:before{content:"\e065";}
+  .glyphicon-question-sign:before{content:"\e085";}
+  .glyphicon-folder-open:before{content:"\e118";}
+  .glyphicon-signal:before{content:"\e124";}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+<style>
+  :root{
+    --navbar-bg:#333;
+    --navbar-brand-bg:#222222;
+    --sidebar-bg:#ffffff;
+    --sidebar-border:#e7e7e7;
+    --link:#337ab7;
+    --purple:#605ca8;
+    --text:#333333;
+    --muted:#777777;
+    --filter-bg:#d9edf7;
+    --filter-border:#bce8f1;
+    --table-head:#eef3f8;
+    --group-row:#f5f5f5;
+    --row-border:#f0f0f0;
+    --page-bg:#ecf0f5;
+    --online:#3c9d40;
+    --chat:#3c8dbc;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size:14px;color:var(--text);background:var(--page-bg);
+    min-height:100vh;
+  }
+
+  /* ============ NAVBAR ============ */
+  .navbar{
+    position:fixed;top:0;left:0;right:0;height:50px;
+    background:var(--navbar-bg);z-index:1000;
+    display:flex;align-items:stretch;
+  }
+  .navbar-brand{
+    background:var(--navbar-brand-bg);
+    color:#fff;display:flex;align-items:center;gap:10px;
+    padding:0 15px;min-width:250px;font-size:20px;font-weight:300;
+    text-decoration:none;white-space:nowrap;
+  }
+  .logo{
+    border-radius: 50%;
+  }
+  .navbar-brand .logo{
+    width:34px;height:34px;background:#222222;
+    display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+    color:var(--purple);font-weight:700;font-size:12px;
+    border:2px solid #d8d3ee;
+    
+  }
+  .navbar-right{
+    margin-left:auto;display:flex;align-items:stretch;
+  }
+  .nav-icon{
+    color:#e6e6e6;display:flex;align-items:center;padding:0 14px;
+    text-decoration:none;font-size:15px;cursor:pointer;background:none;border:none;
+  }
+  .nav-icon:hover{background:rgba(255,255,255,.08);}
+  .nav-user{gap:7px;font-size:14px;}
+  .caret{
+    display:inline-block;width:0;height:0;margin-left:3px;
+    border-left:4px solid transparent;border-right:4px solid transparent;
+    border-top:4px solid #e6e6e6;
+  }
+  .hamburger{
+    display:none;margin:8px 12px 8px auto;
+    border:1px solid #4b5b63;border-radius:4px;background:transparent;
+    padding:8px 10px;cursor:pointer;
+  }
+  .hamburger span{display:block;width:20px;height:2px;background:#cfd8dc;margin:4px 0;border-radius:1px;}
+
+  /* ============ LAYOUT ============ */
+  .wrapper{display:flex;padding-top:50px;min-height:100vh;}
+
+  /* ============ SIDEBAR ============ */
+  .sidebar{
+    width:250px;flex:0 0 250px;background:var(--sidebar-bg);
+    border-right:1px solid var(--sidebar-border);
+    min-height:calc(100vh - 50px);
+  }
+  .user-panel{
+    display:flex;gap:12px;padding:16px 14px;align-items:flex-start;
+    border-bottom:1px solid var(--sidebar-border);
+  }
+  .avatar-wrap{position:relative;flex:0 0 auto;}
+  .avatar{
+    width:48px;height:48px;border-radius:50%;object-fit:cover;
+    display:block;background:#d2d6de;
+  }
+  .avatar-edit{
+    position:absolute;inset:0;border-radius:50%;
+    background:rgba(0,0,0,.55);color:#fff;font-size:10px;
+    display:none;align-items:center;justify-content:center;text-align:center;
+    cursor:pointer;line-height:1.2;padding:4px;
+  }
+  body.editing .avatar-edit{display:flex;}
+  .user-info{min-width:0;}
+  .user-info .hello{font-size:14px;color:#444;font-weight:600;}
+  .user-info .hello .u-name{font-weight:600;}
+  .status{display:flex;align-items:center;gap:6px;color:#444;font-size:12px;margin-top:3px;}
+  .status .dot{width:8px;height:8px;border-radius:50%;background:var(--online);}
+  .period{color:var(--purple);font-weight:700;font-size:13px;margin-top:8px;}
+  .period .p-value{outline:none;}
+
+  .sidebar-menu{list-style:none;margin:0;padding:0;}
+  .sidebar-menu li{border-bottom:1px solid var(--sidebar-border);}
+  .sidebar-menu a{
+    display:flex;align-items:center;gap:10px;
+    padding:12px 14px;color:#444;text-decoration:none;font-size:14px;
+  }
+  .sidebar-menu a:hover{background:#f6f6f6;}
+  .sidebar-menu li.active a{color:var(--link);}
+  .sidebar-menu .mi{width:18px;text-align:center;flex:0 0 auto;font-size:14px;color:#555;}
+  .sidebar-menu .mi i{font-size:14px;line-height:1;}
+  .sidebar-menu .chev{margin-left:auto;color:#999;font-size:12px;}
+
+  /* ============ CONTENT ============ */
+  .content{flex:1;min-width:0;padding:18px 22px 150px;}
+  h1.page-title{font-weight:400;font-size:24px;color:#4a4a68;margin:4px 0 14px;}
+  .breadcrumb{
+    background:#f7f7f7;border:1px solid #ececec;border-radius:4px;
+    padding:8px 15px;font-size:13px;color:#777;margin-bottom:18px;
+    display:flex;flex-wrap:wrap;gap:6px;align-items:center;
+  }
+  .breadcrumb a{color:var(--link);text-decoration:none;}
+  .breadcrumb .sep{color:#ccc;}
+
+  .filter-box{
+    background:var(--filter-bg);border:1px solid var(--filter-border);
+    border-radius:4px;padding:16px 15px 40px;margin-bottom:26px;
+  }
+  .filter-box label{
+    font-weight:700;color:#31708f;margin-right:22px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;font-size:14px;
+  }
+  .filter-box input[type=radio]{margin:0;}
+
+  /* ============ TABLE ============ */
+  .table-card{background:#fff;border:1px solid #e5e5e5;border-radius:3px;overflow:hidden;}
+  table.grades{width:100%;border-collapse:collapse;font-size:13.5px;}
+  table.grades thead th{
+    background:var(--table-head);color:#3b3b4f;font-weight:700;font-size:12px;
+    padding:11px 12px;border-bottom:2px solid #dfe6ee;letter-spacing:.4px;
+  }
+  th.col-asig{text-align:center;}
+  th.col-num,td.col-num{text-align:right;width:12%;}
+  th.col-nota,td.col-nota{text-align:center;width:9%;}
+  th.col-ex,td.col-ex{text-align:right;width:9%;}
+  th.col-actions,td.col-actions{width:36px;text-align:center;}
+  table.grades td{padding:11px 12px;border-bottom:1px solid var(--row-border);}
+  tr.group-row td{
+    background:var(--group-row);font-weight:700;font-size:13px;color:#333;
+    border-top:1px solid #e8e8e8;
+  }
+  tr.group-row .g-label{outline:none;display:inline-block;min-width:60px;}
+  td.asig{color:#333;}
+  .cell{outline:none;min-height:1em;display:block;}
+  body.editing .cell,
+  body.editing .g-label,
+  body.editing .u-name,
+  body.editing .p-value{
+    background:#fffbe6;border:1px dashed #d8c26b;border-radius:3px;padding:1px 5px;cursor:text;
+  }
+  body:not(.editing) .col-actions{display:none;}
+  .row-del,.row-add{
+    border:none;background:none;cursor:pointer;font-size:14px;line-height:1;
+    color:#c0392b;padding:2px 6px;border-radius:3px;
+  }
+  .row-del:hover{background:#fdecea;}
+  .row-add{color:#2e7d32;font-weight:700;}
+  .row-add:hover{background:#e8f5e9;}
+  .group-actions{float:right;display:flex;gap:4px;}
+
+  /* ============ FLOATING BUTTONS ============ */
+  .fab-chat{
+    position:fixed;right:22px;bottom:22px;width:48px;height:48px;border-radius:50%;
+    background:var(--chat);color:#fff;border:none;font-size:19px;cursor:pointer;
+    box-shadow:0 3px 8px rgba(0,0,0,.25);z-index:900;
+  }
+  .fab-edit{
+    position:fixed;right:22px;bottom:82px;height:40px;border-radius:20px;
+    background:var(--purple);color:#fff;border:none;font-size:13px;font-weight:600;
+    padding:0 18px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.25);z-index:900;
+  }
+  body.editing .fab-edit{background:#2e7d32;}
+  .fab-save{
+    position:fixed;right:22px;bottom:132px;height:40px;border-radius:20px;
+    background:#31708f;color:#fff;border:none;font-size:13px;font-weight:600;
+    padding:0 18px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.25);z-index:900;
+  }
+  .fab-save:hover{background:#28607c;}
+  .imgcircle {
+    border-radius: 50%;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 860px){
+    .navbar{flex-wrap:wrap;height:auto;min-height:50px;}
+    .navbar-brand{min-width:0;height:50px;}
+    .hamburger{display:block;}
+    .navbar-right{
+      order:3;width:100%;background:var(--navbar-bg);
+      border-top:1px solid #2f3b40;justify-content:flex-start;height:44px;
+    }
+    .wrapper{padding-top:94px;flex-direction:column;}
+    .sidebar{
+      display:none;width:100%;flex:1 1 auto;min-height:0;
+      border-right:none;border-bottom:1px solid var(--sidebar-border);
+    }
+    body.sidebar-open .sidebar{display:block;}
+    .content{padding:14px 12px 150px;}
+    th.col-num,td.col-num{display:none;}
+    h1.page-title{font-size:21px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<nav class="navbar">
+  <a class="navbar-brand" href="https://matricula.utp.ac.pa/Session/Cuenta/Validar/0nRnjPa0bibPdj$0ceicOgXZQWdc">
+    <span class="logo"><img src="https://matricula.utp.ac.pa/IMAGENES/LOGO3.jpg" class="imgcircle"></span>
+    <span>Matrícula UTP</span>
+  </a>
+  <button class="hamburger" id="hamburger" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="navbar-right">
+    <a class="nav-icon" href="https://matricula.utp.ac.pa/Session/Cuenta/Validar/0nRnjPa0bibPdj$0ceicOgXZQWdc" title="Calendario"><i class="fa fa-calendar"></i></a>
+    <a class="nav-icon" href="https://matricula.utp.ac.pa/Session/Cuenta/Validar/0nRnjPa0bibPdj$0ceicOgXZQWdc" title="Historial"><i class="glyphicon glyphicon-time"></i></a>
+    <a class="nav-icon" href="https://matricula.utp.ac.pa/Session/Cuenta/Validar/0nRnjPa0bibPdj$0ceicOgXZQWdc" title="Listado"><i class="glyphicon glyphicon-list"></i></a>
+    <a class="nav-icon" href="https://matricula.utp.ac.pa/Session/Cuenta/Validar/0nRnjPa0bibPdj$0ceicOgXZQWdc" title="Ayuda"><i class="glyphicon glyphicon-question-sign"></i></a>
+    <a class="nav-icon nav-user" href="https://matricula.utp.ac.pa/Session/Cuenta/Validar/0nRnjPa0bibPdj$0ceicOgXZQWdc">
+      <i class="fa fa-user fa-fw"></i> <span id="navUserName">AARON</span> <span class="caret"></span>
+    </a>
+  </div>
+</nav>
+
+<div class="wrapper">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar" id="sidebar">
+    <div class="user-panel">
+      <div class="avatar-wrap">
+        <img class="avatar" id="avatar" alt="Foto de perfil" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' fill='%23d2d6de'/%3E%3Ccircle cx='24' cy='18' r='8' fill='%23a7adba'/%3E%3Cellipse cx='24' cy='40' rx='14' ry='10' fill='%23a7adba'/%3E%3C/svg%3E">
+        <label class="avatar-edit" for="avatarInput">Cambiar foto</label>
+        <input type="file" id="avatarInput" accept="image/*" hidden="">
+      </div>
+      <div class="user-info">
+        <div class="hello">Hola, <span class="u-name" id="sideUserName">AARON</span></div>
+        <div class="status"><span class="dot"></span> En línea</div>
+        <div class="period">Periodo: <span class="p-value">I-2026</span></div>
+      </div>
+    </div>
+
+    <ul class="sidebar-menu">
+      <li><a href="https://matricula.utp.ac.pa/Session/Cuenta/Validar/0nRnjPa0bibPdj$0ceicOgXZQWdc"><span class="mi"><i class="fa fa-home"></i></span> Inicio</a></li>
+      <li><a href="https://matricula.utp.ac.pa/Session/Cuenta/Validar/0nRnjPa0bibPdj$0ceicOgXZQWdc"><span class="mi"><i class="fa fa-desktop"></i></span> Matricula <span class="chev">‹</span></a></li>
+      <li><a href="https://matricula.utp.ac.pa/Session/Cuenta/Validar/0nRnjPa0bibPdj$0ceicOgXZQWdc"><span class="mi"><i class="glyphicon glyphicon-search"></i></span> Consultas <span class="chev">‹</span></a></li>
+      <li class="active"><a href="#"><span class="mi"><i class="glyphicon glyphicon-signal"></i></span> Historial <span class="chev">‹</span></a></li>
+      <li><a href="https://matricula.utp.ac.pa/Session/Cuenta/Validar/0nRnjPa0bibPdj$0ceicOgXZQWdc"><span class="mi"><i class="fa fa-money"></i></span> Estado de cuenta <span class="chev">‹</span></a></li>
+      <li><a href="https://matricula.utp.ac.pa/Session/Cuenta/Validar/0nRnjPa0bibPdj$0ceicOgXZQWdc"><span class="mi"><i class="glyphicon glyphicon-folder-open"></i></span> Retiro e Inclusion <span class="chev">‹</span></a></li>
+      <li><a href="https://matricula.utp.ac.pa/Session/Cuenta/Validar/0nRnjPa0bibPdj$0ceicOgXZQWdc"><span class="mi"><i class="glyphicon glyphicon-edit"></i></span> Solicitudes <span class="chev">‹</span></a></li>
+      <li><a href="https://matricula.utp.ac.pa/Session/Cuenta/Validar/0nRnjPa0bibPdj$0ceicOgXZQWdc"><span class="mi"><i class="bi bi-cash-coin"></i></span> IFARHU <span class="chev">‹</span></a></li>
+      <li><a href="https://matricula.utp.ac.pa/Session/Cuenta/Validar/0nRnjPa0bibPdj$0ceicOgXZQWdc"><span class="mi"><i class="glyphicon glyphicon-off"></i></span> Salir</a></li>
+    </ul>
+  </aside>
+
+  <!-- ================= CONTENT ================= -->
+  <main class="content">
+    <h1 class="page-title">Historial de Notas</h1>
+
+    <div class="breadcrumb">
+      <a href="https://matricula.utp.ac.pa/Session/Cuenta/Validar/0nRnjPa0bibPdj$0ceicOgXZQWdc"><i class="fa fa-home"></i> Inicio</a><span class="sep">/</span>
+      <a href="https://matricula.utp.ac.pa/Session/Cuenta/Validar/0nRnjPa0bibPdj$0ceicOgXZQWdc">Historial</a><span class="sep">/</span>
+      <span>Historial de Notas</span>
+    </div>
+
+    <div class="filter-box">
+      <label><input type="radio" name="filtro" value="todas"> Todas</label>
+      <label><input type="radio" name="filtro" value="codigo"> Código Asignatura</label>
+    </div>
+
+    <div class="table-card">
+      <table class="grades" id="gradesTable">
+        <thead>
+          <tr>
+            <th class="col-asig">ASIGNATURA</th>
+            <th class="col-num">CODASIG</th>
+            <th class="col-num">CODHORA</th>
+            <th class="col-nota">NOTA</th>
+            <th class="col-ex">EX. SEM</th>
+            <th class="col-actions"></th>
+          </tr>
+        </thead>
+        <tbody id="gradesBody">
+          <!-- rows injected by JS on first load; kept as-is in saved copies -->
+        <tr class="group-row"><td colspan="6"><span class="g-label">2025 V</span><span class="group-actions col-actions"><button class="row-add" title="Agregar asignatura a este periodo" type="button">+</button></span></td></tr><tr class="subject-row"><td class="asig"><span class="cell">PRE-CÁLCULO</span></td><td class="col-num"><span class="cell">1501</span></td><td class="col-num"><span class="cell">0513</span></td><td class="col-nota"><span class="cell">P</span></td><td class="col-ex"><span class="cell">81</span></td><td class="col-actions"><button class="row-del" title="Eliminar fila" type="button">×</button></td></tr><tr class="subject-row"><td class="asig"><span class="cell">SEMINARIO DE INDUC. A LA VIDA EST.UNIV.</span></td><td class="col-num"><span class="cell">0104</span></td><td class="col-num"><span class="cell">0514</span></td><td class="col-nota"><span class="cell">P</span></td><td class="col-ex"><span class="cell"></span></td><td class="col-actions"><button class="row-del" title="Eliminar fila" type="button">×</button></td></tr><tr class="group-row"><td colspan="6"><span class="g-label">2025 I</span><span class="group-actions col-actions"><button class="row-add" title="Agregar asignatura a este periodo" type="button">+</button></span></td></tr><tr class="subject-row"><td class="asig"><span class="cell">CÁLCULO I</span></td><td class="col-num"><span class="cell">7987</span></td><td class="col-num"><span class="cell">3872</span></td><td class="col-nota"><span class="cell">R</span></td><td class="col-ex"><span class="cell"></span></td><td class="col-actions"><button class="row-del" title="Eliminar fila" type="button">×</button></td></tr><tr class="subject-row"><td class="asig"><span class="cell">COMUNICACIÓN ORAL Y ESCRITA</span></td><td class="col-num"><span class="cell">8360</span></td><td class="col-num"><span class="cell">3875</span></td><td class="col-nota"><span class="cell">C</span></td><td class="col-ex"><span class="cell">73</span></td><td class="col-actions"><button class="row-del" title="Eliminar fila" type="button">×</button></td></tr><tr class="subject-row"><td class="asig"><span class="cell">DESARROLLO LÓGICO Y ALGORÍTMOS</span></td><td class="col-num"><span class="cell">0741</span></td><td class="col-num"><span class="cell">3876</span></td><td class="col-nota"><span class="cell">C</span></td><td class="col-ex"><span class="cell"></span></td><td class="col-actions"><button class="row-del" title="Eliminar fila" type="button">×</button></td></tr><tr class="subject-row"><td class="asig"><span class="cell">FÍSICA I (MECÁNICA)</span></td><td class="col-num"><span class="cell">8319</span></td><td class="col-num"><span class="cell">3873</span></td><td class="col-nota"><span class="cell">F</span></td><td class="col-ex"><span class="cell">30</span></td><td class="col-actions"><button class="row-del" title="Eliminar fila" type="button">×</button></td></tr><tr class="subject-row"><td class="asig"><span class="cell">INGLÉS I</span></td><td class="col-num"><span class="cell">8355</span></td><td class="col-num"><span class="cell">3874</span></td><td class="col-nota"><span class="cell">A</span></td><td class="col-ex"><span class="cell">96</span></td><td class="col-actions"><button class="row-del" title="Eliminar fila" type="button">×</button></td></tr><tr class="subject-row"><td class="asig"><span class="cell">QUÍMICA I</span></td><td class="col-num"><span class="cell">1547</span></td><td class="col-num"><span class="cell">3877</span></td><td class="col-nota"><span class="cell">B</span></td><td class="col-ex"><span class="cell">81</span></td><td class="col-actions"><button class="row-del" title="Eliminar fila" type="button">×</button></td></tr><tr class="group-row"><td colspan="6"><span class="g-label">2025 II</span><span class="group-actions col-actions"><button class="row-add" title="Agregar asignatura a este periodo" type="button">+</button></span></td></tr><tr class="subject-row"><td class="asig"><span class="cell">DIBUJO I</span></td><td class="col-num"><span class="cell">1548</span></td><td class="col-num"><span class="cell">4345</span></td><td class="col-nota"><span class="cell">C</span></td><td class="col-ex"><span class="cell">71</span></td><td class="col-actions"><button class="row-del" title="Eliminar fila" type="button">×</button></td></tr><tr class="subject-row"><td class="asig"><span class="cell">GEOGRAFÍA DE PANAMÁ</span></td><td class="col-num"><span class="cell">1403</span></td><td class="col-num"><span class="cell">4344</span></td><td class="col-nota"><span class="cell">A</span></td><td class="col-ex"><span class="cell">93</span></td><td class="col-actions"><button class="row-del" title="Eliminar fila" type="button">×</button></td></tr><tr class="subject-row"><td class="asig"><span class="cell">INGLES II</span></td><td class="col-num"><span class="cell">8403</span></td><td class="col-num"><span class="cell">4343</span></td><td class="col-nota"><span class="cell">A</span></td><td class="col-ex"><span class="cell">91</span></td><td class="col-actions"><button class="row-del" title="Eliminar fila" type="button">×</button></td></tr></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<button class="fab-save" id="saveBtn"><i class="fa fa-floppy-o"></i> Guardar cambios</button>
+<button class="fab-edit" id="editToggle"><i class="fa fa-pencil"></i> Editar datos</button>
+<button class="fab-chat" title="Chat"><i class="fa fa-comments"></i></button>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- initial data (only used on the very first load) ---------- */
+  var seedData = [
+    { period:"2025 V", rows:[
+      ["PRE-CÁLCULO","1501","0513","P","81"],
+      ["SEMINARIO DE INDUC. A LA VIDA EST.UNIV.","0104","0514","P",""]
+    ]},
+    { period:"2025 I", rows:[
+      ["CÁLCULO I","7987","3872","R",""],
+      ["COMUNICACIÓN ORAL Y ESCRITA","8360","3875","C","73"],
+      ["DESARROLLO LÓGICO Y ALGORÍTMOS","0741","3876","C",""],
+      ["FÍSICA I (MECÁNICA)","8319","3873","F","30"],
+      ["INGLÉS I","8355","3874","A","96"],
+      ["QUÍMICA I","1547","3877","B","81"]
+    ]},
+    { period:"2025 II", rows:[
+      ["DIBUJO I","1548","4345","C","71"],
+      ["GEOGRAFÍA DE PANAMÁ","1403","4344","A","93"],
+      ["INGLES II","8403","4343","A","91"]
+    ]}
+  ];
+
+  var tbody = document.getElementById("gradesBody");
+
+  function subjectRow(values){
+    var tr = document.createElement("tr");
+    tr.className = "subject-row";
+    var cols = [
+      {cls:"asig",     val:values[0]},
+      {cls:"col-num",  val:values[1]},
+      {cls:"col-num",  val:values[2]},
+      {cls:"col-nota", val:values[3]},
+      {cls:"col-ex",   val:values[4]}
+    ];
+    cols.forEach(function(c){
+      var td = document.createElement("td");
+      td.className = c.cls;
+      var span = document.createElement("span");
+      span.className = "cell";
+      span.textContent = c.val;
+      td.appendChild(span);
+      tr.appendChild(td);
+    });
+    var act = document.createElement("td");
+    act.className = "col-actions";
+    act.innerHTML = '<button class="row-del" title="Eliminar fila" type="button">&times;</button>';
+    tr.appendChild(act);
+    return tr;
+  }
+
+  function groupRow(label){
+    var tr = document.createElement("tr");
+    tr.className = "group-row";
+    var td = document.createElement("td");
+    td.colSpan = 6;
+    td.innerHTML =
+      '<span class="g-label"></span>' +
+      '<span class="group-actions col-actions">' +
+      '<button class="row-add" title="Agregar asignatura a este periodo" type="button">+</button>' +
+      '</span>';
+    td.querySelector(".g-label").textContent = label;
+    tr.appendChild(td);
+    return tr;
+  }
+
+  /* Build the table only if the tbody is empty. In a saved/downloaded copy
+     the rows are already serialized inside the HTML, so they are kept as-is. */
+  if (tbody.children.length === 0){
+    seedData.forEach(function(g){
+      tbody.appendChild(groupRow(g.period));
+      g.rows.forEach(function(r){ tbody.appendChild(subjectRow(r)); });
+    });
+  }
+
+  /* ---------- delegated row actions (survive serialization) ---------- */
+  tbody.addEventListener("click", function(ev){
+    var t = ev.target;
+    if (t.classList.contains("row-del")){
+      var row = t.closest("tr");
+      if (row) row.remove();
+    } else if (t.classList.contains("row-add")){
+      var group = t.closest("tr");
+      var newRow = subjectRow(["NUEVA ASIGNATURA","0000","0000","",""]);
+      var ref = group;
+      while (ref.nextElementSibling && ref.nextElementSibling.classList.contains("subject-row")){
+        ref = ref.nextElementSibling;
+      }
+      ref.after(newRow);
+      applyEditable(newRow);
+    }
+  });
+
+  /* ---------- edit mode ---------- */
+  var editBtn = document.getElementById("editToggle");
+  var editing = false;
+
+  function applyEditable(scope){
+    var root = scope || document;
+    var nodes = root.querySelectorAll ? root.querySelectorAll(".cell,.g-label,.u-name,.p-value") : [];
+    nodes.forEach(function(el){
+      if (editing){ el.setAttribute("contenteditable","true"); }
+      else { el.removeAttribute("contenteditable"); }
+    });
+    if (root !== document && root.classList && root.classList.contains("subject-row")){
+      root.querySelectorAll(".cell").forEach(function(el){
+        if (editing){ el.setAttribute("contenteditable","true"); }
+      });
+    }
+  }
+
+  function setEditing(state){
+    editing = state;
+    document.body.classList.toggle("editing", editing);
+    editBtn.innerHTML = editing ? '<i class="fa fa-check"></i> Listo' : '<i class="fa fa-pencil"></i> Editar datos';
+    applyEditable();
+  }
+
+  editBtn.addEventListener("click", function(){ setEditing(!editing); });
+
+  /* keep navbar name in sync with sidebar name */
+  var sideName = document.getElementById("sideUserName");
+  var navName  = document.getElementById("navUserName");
+  sideName.addEventListener("input", function(){
+    navName.textContent = sideName.textContent;
+  });
+
+  /* ---------- profile photo (stored as Base64 in the img src) ---------- */
+  var avatarInput = document.getElementById("avatarInput");
+  var avatar = document.getElementById("avatar");
+  avatarInput.addEventListener("change", function(){
+    var f = avatarInput.files && avatarInput.files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function(e){ avatar.src = e.target.result; };
+    reader.readAsDataURL(f);
+  });
+
+  /* ---------- responsive sidebar ---------- */
+  document.getElementById("hamburger").addEventListener("click", function(){
+    document.body.classList.toggle("sidebar-open");
+  });
+
+  /* ---------- save / download current state as a new HTML file ---------- */
+  document.getElementById("saveBtn").addEventListener("click", function(){
+    // 1. Leave edit mode so the download has no yellow borders or +/× buttons active
+    setEditing(false);
+    document.body.classList.remove("sidebar-open");
+
+    // 2. Persist radio button state as attributes (checked property doesn't serialize)
+    document.querySelectorAll('input[type=radio]').forEach(function(r){
+      if (r.checked){ r.setAttribute("checked","checked"); }
+      else { r.removeAttribute("checked"); }
+    });
+
+    // 3. Persist the avatar Base64 explicitly as an attribute (it already is, but be safe)
+    avatar.setAttribute("src", avatar.src);
+
+    // 4. Serialize the whole live DOM: edited texts, added/removed rows and photo included
+    var html = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+
+    // 5. Trigger the download
+    var blob = new Blob([html], {type:"text/html;charset=utf-8"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "matricula_utp_actualizado.html";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+  });
+})();
+</script>
+
+
+</body></html>
