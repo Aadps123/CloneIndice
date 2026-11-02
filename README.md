@@ -1,0 +1,1 @@
+Nothing illegal here! Think of it like making a new cover of a classic song—or painting your own twist on a famous piece of art. It’s just an artistic reimagining of the university grade portal. 100% legal, 100% vibes.
